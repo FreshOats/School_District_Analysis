@@ -168,7 +168,7 @@ This analysis shows a huge difference between the district schools and the chart
 2. The correlation with the budget per student is not a good indicator, since the charter schools with high budgets are high performers, whereas 3 out of the 4 district schools are in the highest budget bracket, and the volume of students and type of school have a seemingly greater impact on the scores
 
 Typically charter schools have a lower student:teacher ratio, meaning fewer students per teacher. The more individualized approach caters to better learning in general, and this is ideal in smaller settings. When just comparing the medium sized schools, it becomes clear that size alone isn't a great indicator. The following are the medium size schools by rank:
-1. Cabrera High Schoo, charter, 1858 students, 91.3% passing
+1. Cabrera High School, charter, 1858 students, 91.3% passing
 2. Wilson High School, charter, 2283 students, 90.6% passing
 3. Wright High School, charter, 1800 students, 90.3% passing
 4. Ford High School, district, 2739 students, 54.3% passing
@@ -176,6 +176,9 @@ Typically charter schools have a lower student:teacher ratio, meaning fewer stud
 6. Figueroa High School, district, 2949 students, 53.2% passing
 
 In this medium range, from 1800 to 3000 students, there is a bimodal distribution in the passing rates with one mode around 53% passing and the other around 91% passing, whereas the number of students does not share this same tight cluster. 
+
+
+
 
 
 ---
