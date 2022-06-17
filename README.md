@@ -176,3 +176,207 @@ Typically charter schools have a lower student:teacher ratio, meaning fewer stud
 6. Figueroa High School, district, 2949 students, 53.2% passing
 
 In this medium range, from 1800 to 3000 students, there is a bimodal distribution in the passing rates with one mode around 53% passing and the other around 91% passing, whereas the number of students does not share this same tight cluster. 
+
+
+---
+---
+## Code Analysis
+The code required two dependencies: pandas and numpy.
+
+``` 
+import pandas as pd
+import numpy as np
+```
+
+There were several considerations in coding that took place upon the exploratory analysis of this data. Initially, it was uncovered that a subset of students thought it would be funny to give themselves titles, such as Dr. as a prefix or PhD as a suffix. After confirming that there were no null values in the data, a string replace function was used to replace any of the discovered prefixes or suffixes and replaced with an empty string. 
+
+```
+students_data_df = pd.read_csv(data)
+
+prefixes_suffixes = ["Dr. ", "Mr. ", "Mrs. ", "Ms. ", "Miss ", " MD", " DDS", " DVM", " PhD"]
+
+for word in prefixes_suffixes:
+    students_data_df["student_name"] = students_data_df["student_name"].str.replace(word, "")
+    
+students_data_df
+```
+
+This dataset needed to be merged with a second dataset containing the school information from each district including the school size and budget. Since there were no null values, the merge was a straightforward left join:
+
+```
+school_data_complete_df = pd.merge(students_data_df, school_data_df, on=["school_name", "school_name"])
+```
+
+At this point in the analysis, it was important to consider the fabrication of grades for the ninth grade of Thomas High School, and that information would have to be carefully dealt with. Using a df.loc[] call, the math and reading scores were set to null values for the 9th grade classes at Thomas High School:
+
+```
+student_data_df.loc[(student_data_df["school_name"] == "Thomas High School") & (student_data_df["grade"] == "9th"), ("math_score", "reading_score")] = np.nan
+```
+
+Since the totals would all be affected by removing a subset of the students, the new adjusted total had to be determined for the calculations of score averages and percentages. The student total would remain the same for the budget per student calculations. 
+
+```
+# Counting the number of 9th Graders at Thomas High School
+ninth_count = school_data_complete_df[(school_data_complete_df["school_name"] == "Thomas High School") & (student_data_df["grade"] == "9th")]["Student ID"].count()
+
+# Get the total student count 
+student_count = school_data_complete_df["Student ID"].count()
+
+
+# The adjusted student count subtracts the Thomas High School 9th graders from the total
+student_count_adjusted = student_count - ninth_count
+```
+
+The math and reading passing rates were calculated and then converted to passing percentages. Using conditionals, the overall passing rate dependent on math and reading passes was determined as well. 
+
+```
+# Calculate the passing rates using the "clean_student_data"
+passing_math_count = school_data_complete_df[(school_data_complete_df["math_score"] >= 70)].count()["student_name"]
+passing_reading_count = school_data_complete_df[(school_data_complete_df["reading_score"] >= 70)].count()["student_name"]
+
+# Calculate the passing percentages with the new total student count
+passing_math_percentage = passing_math_count / student_count_adjusted * 100
+passing_reading_percentage = passing_reading_count / student_count_adjusted * 100
+
+
+# Calculate the students who passed both reading and math
+passing_math_reading = school_data_complete_df[(school_data_complete_df["math_score"] >= 70) & (school_data_complete_df["reading_score"] >= 70)]
+
+
+# Calculate the number of students that passed both reading and math
+overall_passing_math_reading_count = passing_math_reading["student_name"].count()
+
+
+# Calculate the overall passing percentage with new total student count
+overall_passing_percentage = overall_passing_math_reading_count / student_count_adjusted * 100
+
+```
+
+Following these procedures, a new DataFrame was established using a key:values and subsequent formatting. This df provided the district summary. 
+
+```
+# Create a DataFrame
+district_summary_df = pd.DataFrame(
+          [{"Total Schools": school_count, 
+          "Total Students": student_count, 
+          "Total Budget": total_budget,
+          "Average Math Score": average_math_score, 
+          "Average Reading Score": average_reading_score,
+          "% Passing Math": passing_math_percentage,
+         "% Passing Reading": passing_reading_percentage,
+        "% Overall Passing": overall_passing_percentage}])
+```
+
+Following the district summary, the summary per school required the additional step of grouping. The following process was followed: 
+
+```
+# Determine the School Type
+per_school_types = school_data_df.set_index(["school_name"])["type"]
+
+# Calculate the total student count
+per_school_counts = school_data_complete_df["school_name"].value_counts()
+
+# Calculate the total school budget and per capita spending
+per_school_budget = school_data_complete_df.groupby(["school_name"]).mean()["budget"]
+# Calculate the per capita spending.
+per_school_capita = per_school_budget / per_school_counts
+
+# Calculate the average test scores
+per_school_math = school_data_complete_df.groupby(["school_name"]).mean()["math_score"]
+per_school_reading = school_data_complete_df.groupby(["school_name"]).mean()["reading_score"]
+
+# Calculate the passing scores by creating a filtered DataFrame
+per_school_passing_math = school_data_complete_df[(school_data_complete_df["math_score"] >= 70)]
+per_school_passing_reading = school_data_complete_df[(school_data_complete_df["reading_score"] >= 70)]
+
+# Calculate the number of students passing math and passing reading by school
+per_school_passing_math = per_school_passing_math.groupby(["school_name"]).count()["student_name"]
+per_school_passing_reading = per_school_passing_reading.groupby(["school_name"]).count()["student_name"]
+
+# Calculate the percentage of passing math and reading scores per school
+per_school_passing_math = per_school_passing_math / per_school_counts * 100
+per_school_passing_reading = per_school_passing_reading / per_school_counts * 100
+
+# Calculate the students who passed both reading and math
+per_passing_math_reading = school_data_complete_df[(school_data_complete_df["reading_score"] >= 70) & (school_data_complete_df["math_score"] >= 70)]
+
+# Calculate the number of students passing math and passing reading by school
+per_passing_math_reading = per_passing_math_reading.groupby(["school_name"]).count()["student_name"]
+
+# Calculate the percentage of passing math and reading scores per school
+per_overall_passing_percentage = per_passing_math_reading / per_school_counts * 100
+```
+
+Similar to the process in the previous step, this was put into a DataFrame and filtered using the df.loc[] procedure, also as above. After the new average scores and percentages were determined for the 10-12th grade classes at Thomas High School, the data needed to replace the data from the original data table. This was done using the df.loc[] procedure, setting the new values:
+```
+per_school_summary_df.loc[["Thomas High School"], ["% Passing Math"]] = THS_passing_math_percentage
+per_school_summary_df.loc[["Thomas High School"], ["% Passing Reading"]] = THS_passing_reading_percentage
+per_school_summary_df.loc[["Thomas High School"], ["% Overall Passing"]] = THS_overall_passing_percentage
+```
+
+The schools were ranked using a df.sort_values function to show both the top and bottom 5 schools in the district:
+
+```
+top_schools = per_school_summary_df.sort_values(["% Overall Passing"], ascending=False)
+top_schools.head()
+
+bottom_schools = per_school_summary_df.sort_values(["% Overall Passing"], ascending=True)
+bottom_schools.head()
+```
+
+To analyze the scores by grade at each of the schools, a few steps needed to be taken. Each grade needed its own subset of the data for both the math and the reading scores: 
+
+```
+# Create a Series of scores by grade levels using conditionals.
+ninth_graders = school_data_complete_df[(school_data_complete_df["grade"] == "9th")]
+tenth_graders = school_data_complete_df[(school_data_complete_df["grade"] == "10th")]
+eleventh_graders = school_data_complete_df[(school_data_complete_df["grade"] == "11th")]
+twelfth_graders = school_data_complete_df[(school_data_complete_df["grade"] == "12th")]
+    
+# Group each school Series by the school name for the average math score.
+ninth_grade_math_scores = ninth_graders.groupby(["school_name"]).mean()["math_score"]
+tenth_grade_math_scores = tenth_graders.groupby(["school_name"]).mean()["math_score"]
+eleventh_grade_math_scores = eleventh_graders.groupby(["school_name"]).mean()["math_score"]
+twelfth_grade_math_scores = twelfth_graders.groupby(["school_name"]).mean()["math_score"]
+
+# Group each school Series by the school name for the average reading score.
+ninth_grade_reading_scores = ninth_graders.groupby(["school_name"]).mean()["reading_score"]
+tenth_grade_reading_scores = tenth_graders.groupby(["school_name"]).mean()["reading_score"]
+eleventh_grade_reading_scores = eleventh_graders.groupby(["school_name"]).mean()["reading_score"]
+twelfth_grade_reading_scores = twelfth_graders.groupby(["school_name"]).mean()["reading_score"]
+
+
+# Combine each Series for average math scores by school into single data frame.
+math_scores_by_grade = pd.DataFrame({
+    "9th": ninth_grade_math_scores,
+    "10th": tenth_grade_math_scores,
+    "11th": eleventh_grade_math_scores,
+    "12th": twelfth_grade_math_scores})
+
+math_scores_by_grade
+```
+This process was repeated for the reading scores, followed by some fun and exciting formatting. All of the formatting was done the same way as this single example.
+
+```
+math_scores_by_grade["9th"] = math_scores_by_grade["9th"].map("{:.1f}".format)
+```
+
+To analyze the spending per student and the school sizes, the data needed to be separated into bins. Initially the .describe() function was used to get the quartiles, and then the bins and labels were set using the following process:
+
+```
+# Establish the spending bins and group names.
+per_school_capita.describe()
+
+# Separate bins by quartile
+bins = [0, 585, 630, 645, 675]
+bin_names = ["<$586", "$586-630", "$631-645", "$646-675"]
+
+per_school_capita.groupby(pd.cut(per_school_capita, bins)).count()
+
+
+# Categorize spending based on the bins.
+per_school_summary_df["Spending Ranges (Per Student)"] = pd.cut(per_school_capita, bins, labels=bin_names)
+per_school_summary_df
+```
+
+The rest of the procedure followed minor changes in the previously presented code to accommodate the needs of that specific task. Occasionally the number of decimals was changed to be able to see some of the minor differences between the before/after removing the Thomas High School 9th grade data. 
