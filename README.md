@@ -5,7 +5,7 @@
 
 ## Overview
 
-The competition getting into colleges and universities is extreme, and it is absolutely critical that the schools and students are evaluated fairly across the country. A particular school district evaluated their schools and rankings based on the assumption that the grades were unaltered and fairly reported; however it was indicated that the 9th grade scores from math and reading at Thomas High School had been altered. The impact that this would have on the school's upper classmen as well as on the other schools in the district could be massively impacted depending on the severity of the altered grades. 
+The competition getting into colleges and universities is extreme, and it is absolutely critical that the schools and students are evaluated fairly across the country. Different schools can be evaluated by several metrics, including school size, type, and budget per student to see why certain schools outperform others. A particular school district evaluated their schools and rankings based on the assumption that the grades were unaltered and fairly reported; however it was indicated that the 9th grade scores from math and reading at Thomas High School had been altered. The impact that this would have on the school's upper classmen as well as on the other schools in the district could be massively impacted depending on the severity of the altered grades. 
 
 ### Purpose
 
@@ -40,7 +40,7 @@ It's important to evaluate the overall district performance, not only from withi
 ![District_Summary_2](https://user-images.githubusercontent.com/33167541/174171637-a8956a8a-0908-4f57-ae02-236c101344e2.png)
 
 
-While these numbers seem small, if the trends follow with the 9th graders at Thomas HS, this could potentially indicated that students that would have potentially failed had their grades inflated such that they would pass, impacting the pass rates. This would not have been impacted if only passing students had passed their courses. 
+While these numbers seem small, if the trends follow with the 9th graders at Thomas HS, this could potentially indicate that students who would have potentially failed had their grades inflated such that they would pass, impacting the pass rates. This metric would not have been altered if only passing students had passed their courses. 
 
 ---
 ### Performance Summaries Per School
